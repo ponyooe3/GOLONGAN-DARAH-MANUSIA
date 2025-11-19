@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Golongan Darah ABO & Kuis</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'blood-red': '#E3342F',
+                        'blood-dark': '#B02C2C',
+                        'gray-light': '#F8FAFC',
+                        'gray-medium': '#E2E8F0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7fa;
+            color: #1e293b;
+            scroll-behavior: smooth;
+        }
+
+        /* Navbar Styling */
+        #navbar {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        #navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .nav-link {
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .nav-link:hover {
+            color: #E3342F;
+            background-color: #FEF2F2;
+        }
+        
+        /* Mobile Menu */
+        #navMenu {
+            display: none;
+            transition: all 0.3s ease-out;
+        }
+        #navMenu.active {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            padding: 1rem 0;
+            border-top: 1px solid #E2E8F0;
+            z-index: 10;
+        }
+
+        /* Hero Button */
+        .hero-btn {
+            background-color: #E3342F;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .hero-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(227, 52, 47, 0.3), 0 2px 4px -2px rgba(227, 52, 47, 0.3);
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            border: 1px solid #E2E8F0;
+            background-color: #F8FAFC;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .quiz-option:hover {
+            background-color: #FEF2F2;
+            border-color: #FCA5A5;
+        }
+        .quiz-option.selected {
+            background-color: #FEE2E2;
+            border-color: #E3342F;
+            box-shadow: 0 0 0 2px #E3342F;
+        }
+        .quiz-option input[type="radio"] {
+            margin-right: 1rem;
+            accent-color: #E3342F;
+        }
+        .quiz-option label {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+
+        /* Results Styles */
+        #quizResults {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background-color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .results-icon.excellent { color: #10B981; }
+        .results-icon.good { color: #3B82F6; }
+        .results-icon.fair { color: #F59E0B; }
+        .results-icon.needs-improvement { color: #EF4444; }
+
+        .breakdown-list {
+            text-align: left;
+            margin-top: 2rem;
+        }
+        .breakdown-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            border-left: 5px solid;
+            transition: background-color 0.3s;
+        }
+        .breakdown-item.correct {
+            background-color: #ECFDF5;
+            border-color: #10B981;
+        }
+        .breakdown-item.incorrect {
+            background-color: #FEF2F2;
+            border-color: #EF4444;
+        }
+        .breakdown-question {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .answer-status {
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+        .answer-details {
+            margin-top: 0.5rem;
+            padding-left: 1rem;
+            font-size: 0.9rem;
+            color: #4B5563;
+        }
+        .breakdown-explanation {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #E2E8F0;
+            font-size: 0.9rem;
+        }
+
+        /* Simulator Styles */
+        .simulator-card .select-wrapper {
+            position: relative;
+        }
+        .simulator-card select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%234A5568"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em;
+        }
+
+        .probability-chart {
+            margin-top: 1rem;
+        }
+        .probability-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .blood-type-label {
+            width: 50px;
+            font-weight: 600;
+        }
+        .probability-bar {
+            flex-grow: 1;
+            height: 12px;
+            background-color: #E5E7EB;
+            border-radius: 9999px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background-color: #E3342F;
+            transition: width 1s ease-out;
+        }
+        .percentage-label {
+            width: 40px;
+            text-align: right;
+            font-size: 0.875rem;
+        }
+        .results-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #FFFBEA;
+            border-radius: 0.75rem;
+            border: 1px solid #FCD34D;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        .hdn-warning {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #FEE2E2;
+            border-radius: 0.75rem;
+            border: 1px solid #EF4444;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        /* Scroll to Top Button */
+        #scrollToTop {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+            background-color: #E3342F;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(227, 52, 47, 0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #scrollToTop:hover {
+            background-color: #B02C2C;
+            transform: scale(1.05);
+        }
+
+        /* Fade-in Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#home" class="flex-shrink-0 text-xl font-bold text-blood-red tracking-wider">
+                        BLOOD<span class="text-gray-900">GEN</span>
+                    </a>
+                </div>
+                <div class="hidden md:block">
+                    <div id="navDesktop" class="ml-10 flex items-baseline space-x-4">
+                        <a href="#home" class="nav-link text-gray-700 hover:text-blood-red">Beranda</a>
+                        <a href="#informasi" class="nav-link text-gray-700 hover:text-blood-red">Informasi</a>
+                        <a href="#simulator" class="nav-link text-gray-700 hover:text-blood-red">Simulator</a>
+                        <a href="#kuis" class="nav-link text-gray-700 hover:text-blood-red">Kuis</a>
+                        <a href="#kontak" class="nav-link text-gray-700 hover:text-blood-red">Kontak</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="navToggle" class="text-gray-500 hover:text-blood-red focus:outline-none p-2 rounded-md">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="navMenu" class="md:hidden bg-white/95">
+            <a href="#home" class="nav-link text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">Beranda</a>
+            <a href="#informasi" class="nav-link text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">Informasi</a>
+            <a href="#simulator" class="nav-link text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">Simulator</a>
+            <a href="#kuis" class="nav-link text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">Kuis</a>
+            <a href="#kontak" class="nav-link text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">Kontak</a>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        
+        <!-- Hero Section -->
+        <section id="home" class="relative bg-gray-light py-20 lg:py-32 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 fade-in md:pr-10">
+                    <span class="text-sm font-semibold text-blood-red uppercase tracking-wider">Biologi & Genetika</span>
+                    <h1 class="text-5xl lg:text-7xl font-extrabold text-gray-900 mt-2 leading-tight">
+                        Pahami Misteri Golongan Darah
+                    </h1>
+                    <p class="mt-4 text-lg text-gray-600">
+                        Jelajahi sistem ABO dan Rh, pelajari pewarisan genetik, simulasikan kemungkinan golongan darah anak, dan uji pengetahuan Anda dengan kuis interaktif!
+                    </p>
+                    <div class="mt-8 flex space-x-3">
+                        <a href="#kuis" class="hero-btn inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white shadow-lg hover:shadow-xl">
+                            Mulai Kuis Sekarang
+                        </a>
+                        <a href="#simulator" class="inline-flex items-center justify-center px-6 py-3 border border-blood-red text-base font-medium rounded-lg text-blood-red bg-white shadow-md hover:bg-red-50 transition duration-150">
+                            Coba Simulator
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 mt-12 md:mt-0 flex justify-center fade-in">
+                    <!-- Placeholder for a simple visual element (e.g., stylized blood cells) -->
+                    <div class="relative w-full max-w-sm h-64">
+                        <div class="absolute inset-0 rounded-full bg-blood-red opacity-10 blur-xl"></div>
+                        <svg class="w-full h-full text-blood-red" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Blood Cell (Toroidal shape) -->
+                            <circle cx="50" cy="50" r="40" fill="#E3342F" opacity="0.8"/>
+                            <circle cx="50" cy="50" r="15" fill="#B02C2C" opacity="0.6"/>
+                            <!-- ABO Antigen A (Triangle) -->
+                            <polygon points="60,10 65,20 55,20" fill="#10B981" transform="rotate(20 60 15)" opacity="0.9"/>
+                            <!-- ABO Antigen B (Square) -->
+                            <rect x="75" y="45" width="10" height="10" fill="#3B82F6" transform="rotate(45 80 50)" opacity="0.9"/>
+                            <!-- Rh Antigen D (+) -->
+                            <circle cx="20" cy="30" r="5" fill="#F59E0B" opacity="0.9"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Information Section -->
+        <section id="informasi" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 fade-in">
+                    <h2 class="text-4xl font-extrabold text-gray-900">Sistem Golongan Darah</h2>
+                    <p class="mt-3 text-xl text-gray-600">Dasar-dasar yang perlu Anda ketahui tentang ABO dan Rhesus (Rh).</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Card 1: Sistem ABO -->
+                    <div class="card fade-in">
+                        <h3 class="text-2xl font-bold text-blood-dark mb-4 flex items-center">
+                            <span class="mr-2 text-3xl">🅰️🅱️</span> Sistem ABO
+                        </h3>
+                        <p class="text-gray-700 mb-4">
+                            Sistem ini ditemukan oleh Karl Landsteiner pada tahun 1900. Golongan darah ditentukan oleh keberadaan **antigen A** dan **antigen B** pada permukaan sel darah merah.
+                        </p>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-2">
+                            <li>Golongan A: Memiliki antigen A, antibodi Anti-B.</li>
+                            <li>Golongan B: Memiliki antigen B, antibodi Anti-A.</li>
+                            <li>Golongan AB: Memiliki antigen A dan B (penerima universal).</li>
+                            <li>Golongan O: Tidak memiliki antigen (donor universal).</li>
+                        </ul>
+                    </div>
+
+                    <!-- Card 2: Faktor Rhesus -->
+                    <div class="card fade-in" style="transition-delay: 0.1s;">
+                        <h3 class="text-2xl font-bold text-blood-dark mb-4 flex items-center">
+                            <span class="mr-2 text-3xl">➕➖</span> Faktor Rhesus (Rh)
+                        </h3>
+                        <p class="text-gray-700 mb-4">
+                            Faktor Rh merujuk pada keberadaan **Antigen D**. Faktor ini adalah komponen kunci dalam transfusi darah dan kehamilan.
+                        </p>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-2">
+                            <li>Rh Positif (+): Memiliki Antigen D (sekitar 85% populasi).</li>
+                            <li>Rh Negatif (-): Tidak memiliki Antigen D.</li>
+                            <li>Ketidakcocokan Rh (Ibu Rh- & Janin Rh+) dapat menyebabkan <a href="#kuis" class="text-blood-red hover:underline font-medium">Penyakit Hemolitik pada Bayi Baru Lahir (HDN)</a>.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Card 3: Pewarisan Genetik -->
+                    <div class="card fade-in" style="transition-delay: 0.2s;">
+                        <h3 class="text-2xl font-bold text-blood-dark mb-4 flex items-center">
+                            <span class="mr-2 text-3xl">🧬</span> Pewarisan Genetik
+                        </h3>
+                        <p class="text-gray-700 mb-4">
+                            Golongan darah diwariskan melalui alel: $I^A$, $I^B$, dan $i$. Alel $I^A$ dan $I^B$ bersifat kodominan, sedangkan $i$ resesif.
+                        </p>
+                        <p class="text-gray-700">
+                            **Genotipe & Fenotipe:**
+                        </p>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-2 text-sm">
+                            <li>A: $I^A I^A$ atau $I^A i$</li>
+                            <li>B: $I^B I^B$ atau $I^B i$</li>
+                            <li>AB: $I^A I^B$</li>
+                            <li>O: $ii$</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section id="simulator" class="py-20 bg-gray-light">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 fade-in">
+                    <h2 class="text-4xl font-extrabold text-gray-900">Simulator Pewarisan Golongan Darah</h2>
+                    <p class="mt-3 text-xl text-gray-600">Prediksi kemungkinan golongan darah anak berdasarkan golongan darah orang tua.</p>
+                </div>
+
+                <div class="card simulator-card fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Ayah / Father -->
+                        <div>
+                            <h4 class="text-xl font-semibold mb-4 text-blood-dark">Ayah</h4>
+                            <div class="mb-4">
+                                <label for="fatherBlood" class="block text-sm font-medium text-gray-700 mb-1">Golongan Darah ABO</label>
+                                <div class="select-wrapper">
+                                    <select id="fatherBlood" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blood-red focus:border-blood-red sm:text-sm rounded-md shadow-sm">
+                                        <option value="" disabled selected>Pilih Golongan Darah</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="AB">AB</option>
+                                        <option value="O">O</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="fatherRh" class="block text-sm font-medium text-gray-700 mb-1">Faktor Rhesus (Rh)</label>
+                                <div class="select-wrapper">
+                                    <select id="fatherRh" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blood-red focus:border-blood-red sm:text-sm rounded-md shadow-sm">
+                                        <option value="" disabled selected>Pilih Rhesus</option>
+                                        <option value="positive">Rh Positif (+)</option>
+                                        <option value="negative">Rh Negatif (-)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ibu / Mother -->
+                        <div>
+                            <h4 class="text-xl font-semibold mb-4 text-blood-dark">Ibu</h4>
+                            <div class="mb-4">
+                                <label for="motherBlood" class="block text-sm font-medium text-gray-700 mb-1">Golongan Darah ABO</label>
+                                <div class="select-wrapper">
+                                    <select id="motherBlood" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blood-red focus:border-blood-red sm:text-sm rounded-md shadow-sm">
+                                        <option value="" disabled selected>Pilih Golongan Darah</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="AB">AB</option>
+                                        <option value="O">O</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="motherRh" class="block text-sm font-medium text-gray-700 mb-1">Faktor Rhesus (Rh)</label>
+                                <div class="select-wrapper">
+                                    <select id="motherRh" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blood-red focus:border-blood-red sm:text-sm rounded-md shadow-sm">
+                                        <option value="" disabled selected>Pilih Rhesus</option>
+                                        <option value="positive">Rh Positif (+)</option>
+                                        <option value="negative">Rh Negatif (-)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="calculateBtn" onclick="calculateInheritance()" class="mt-8 w-full bg-blood-red text-white py-3 rounded-lg font-semibold shadow-md hover:bg-blood-dark transition duration-150">
+                        Hitung Kemungkinan
+                    </button>
+                </div>
+
+                <!-- Simulator Results -->
+                <div id="simulatorResults" style="display: none;" class="card mt-8 fade-in">
+                    <h3 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">Hasil Simulasi</h3>
+                    <div id="resultsContent">
+                        <!-- Results content will be inserted here by JavaScript -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Quiz Section (New Feature) -->
+        <section id="kuis" class="py-20 bg-white">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 fade-in">
+                    <h2 class="text-4xl font-extrabold text-gray-900">Uji Pengetahuan Golongan Darah</h2>
+                    <p class="mt-3 text-xl text-gray-600">Jawab 10 pertanyaan tentang sistem ABO, Rh, dan pewarisannya.</p>
+                </div>
+
+                <!-- Quiz Card -->
+                <div id="quizCard" class="card fade-in">
+                    <!-- Question Header -->
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h3 class="text-2xl font-bold text-blood-dark">Kuis Genetika Darah</h3>
+                        <div class="text-lg font-medium text-gray-600">
+                            <span id="questionNumber">1</span>
+                            <span id="questionTotal">dari 10</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Text -->
+                    <p id="questionText" class="text-xl font-semibold mb-6">
+                        <!-- Question text will be inserted here -->
+                    </p>
+
+                    <!-- Options -->
+                    <div id="quizOptions" class="mb-8">
+                        <!-- Options will be inserted here by JavaScript -->
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between items-center pt-4 border-t">
+                        <button id="prevBtn" onclick="previousQuestion()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-150" style="display: none;">
+                            ← Sebelumnya
+                        </button>
+                        <button id="nextBtn" onclick="nextQuestion()" class="px-4 py-2 bg-blood-red text-white rounded-lg font-medium hover:bg-blood-dark transition duration-150">
+                            Selanjutnya →
+                        </button>
+                        <button id="submitBtn" onclick="submitQuiz()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition duration-150" style="display: none;">
+                            Kirim Jawaban
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Results -->
+                <div id="quizResults" class="fade-in">
+                    <div class="card">
+                        <span id="resultsIcon" class="results-icon excellent"></span>
+                        <h3 id="resultsTitle" class="text-4xl font-bold text-gray-900 mb-2">Luar Biasa!</h3>
+                        <p id="resultsMessage" class="text-xl text-gray-600 mb-6">Anda memiliki pemahaman yang sangat baik.</p>
+                        
+                        <div class="bg-gray-light p-4 rounded-lg inline-block shadow-inner mb-8">
+                            <p class="text-2xl font-bold text-gray-800">Skor Anda: <span id="finalScore" class="text-blood-red">10</span> / 10</p>
+                        </div>
+                        
+                        <div id="resultsBreakdown" class="text-left">
+                            <!-- Detailed breakdown will be inserted here -->
+                        </div>
+
+                        <button onclick="restartQuiz()" class="mt-8 px-6 py-3 bg-blood-red text-white rounded-lg font-semibold shadow-md hover:bg-blood-dark transition duration-150">
+                            Coba Lagi
+                        </button>
+                        <a href="#informasi" class="mt-8 ml-4 px-6 py-3 border border-blood-red text-blood-red rounded-lg font-semibold hover:bg-red-50 transition duration-150 inline-block">
+                            Kembali ke Informasi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="kontak" class="py-20 bg-gray-dark/10">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 fade-in">
+                    <h2 class="text-4xl font-extrabold text-gray-900">Hubungi Kami</h2>
+                    <p class="mt-3 text-xl text-gray-600">Punya pertanyaan atau masukan? Kirimkan pesan kepada kami.</p>
+                </div>
+                
+                <div class="card fade-in">
+                    <form id="contactForm" class="space-y-6">
+                        <div>
+                            <label for="contactName" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                            <input type="text" id="contactName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blood-red focus:border-blood-red">
+                        </div>
+                        <div>
+                            <label for="contactEmail" class="block text-sm font-medium text-gray-700">Alamat Email</label>
+                            <input type="email" id="contactEmail" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blood-red focus:border-blood-red">
+                        </div>
+                        <div>
+                            <label for="contactMessage" class="block text-sm font-medium text-gray-700">Pesan Anda</label>
+                            <textarea id="contactMessage" rows="4" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blood-red focus:border-blood-red"></textarea>
+                        </div>
+                        
+                        <div id="formSuccess" class="p-3 bg-green-100 text-green-700 rounded-lg text-sm font-medium" style="display: none;">
+                            Pesan Anda telah berhasil dikirim! Kami akan segera menghubungi Anda.
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-blood-red text-white rounded-lg font-semibold shadow-md hover:bg-blood-dark transition duration-150">
+                            Kirim Pesan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400">
+            <p>&copy; 2023 BLOODGEN. Sumber Informasi: Biologi dan Genetika Golongan Darah.</p>
+        </div>
+    </footer>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollToTop" onclick="scrollToTop()">
+        ↑
+    </button>
+
+    <!-- JavaScript Logic -->
+    <script>
+// ============================================
+// QUIZ DATA - 10 Soal Interaktif
+// ============================================
+const quizQuestions = [
+    {
+        question: "Siapa ilmuwan yang pertama kali menemukan sistem golongan darah ABO pada tahun 1900?",
+        options: [
+            "Karl Landsteiner",
+            "Gregor Mendel",
+            "Charles Darwin",
+            "Louis Pasteur"
+        ],
+        correct: 0,
+        explanation: "Karl Landsteiner menemukan sistem golongan darah ABO pada tahun 1900 dan menerima Hadiah Nobel untuk penemuannya pada tahun 1930. Penemuan ini merevolusi transfusi darah dan menyelamatkan jutaan nyawa."
+    },
+    {
+        question: "Golongan darah manakah yang disebut sebagai 'donor universal'?",
+        options: [
+            "Golongan A",
+            "Golongan B",
+            "Golongan AB",
+            "Golongan O"
+        ],
+        correct: 3,
+        explanation: "Golongan O disebut donor universal karena tidak memiliki antigen A atau B pada sel darah merahnya, sehingga dapat diberikan kepada semua golongan darah tanpa menyebabkan reaksi aglutinasi."
+    },
+    {
+        question: "Seseorang dengan golongan darah AB memiliki genotipe apa?",
+        options: [
+            "IAIA",
+            "IBIB",
+            "IAIB",
+            "ii"
+        ],
+        correct: 2,
+        explanation: "Golongan darah AB memiliki genotipe IAIB, menunjukkan kodominansi di mana kedua alel IA dan IB sama-sama terekspresikan pada permukaan sel darah merah."
+    },
+    {
+        question: "Jika ayah bergolongan darah A (IAi) dan ibu bergolongan darah B (IBi), anak mereka TIDAK MUNGKIN memiliki golongan darah?",
+        options: [
+            "Semua golongan mungkin",
+            "Hanya golongan O",
+            "Hanya golongan AB",
+            "Golongan A dan B saja"
+        ],
+        correct: 0,
+        explanation: "Persilangan IAi × IBi dapat menghasilkan semua kemungkinan golongan darah: A (IAi), B (IBi), AB (IAIB), dan O (ii) dengan probabilitas masing-masing 25%. Ini adalah satu-satunya kombinasi orang tua yang dapat menghasilkan keempat golongan darah."
+    },
+    {
+        question: "Apa yang dimaksud dengan aglutinasi dalam konteks transfusi darah?",
+        options: [
+            "Proses pembentukan sel darah baru",
+            "Penggumpalan darah akibat reaksi antigen-antibodi",
+            "Peningkatan jumlah sel darah putih",
+            "Pemisahan plasma dari sel darah"
+        ],
+        correct: 1,
+        explanation: "Aglutinasi adalah penggumpalan sel darah merah yang terjadi ketika antigen pada sel darah merah bereaksi dengan antibodi yang tidak kompatibel dalam plasma. Ini adalah reaksi berbahaya yang dapat terjadi pada transfusi darah yang tidak cocok."
+    },
+    {
+        question: "Golongan darah O memiliki antibodi apa dalam plasmanya?",
+        options: [
+            "Tidak ada antibodi",
+            "Antibodi Anti-A saja",
+            "Antibodi Anti-B saja",
+            "Antibodi Anti-A dan Anti-B"
+        ],
+        correct: 3,
+        explanation: "Golongan darah O memiliki antibodi Anti-A dan Anti-B dalam plasmanya. Karena tidak memiliki antigen A atau B, tubuh menganggap keduanya sebagai zat asing dan memproduksi antibodi terhadap keduanya."
+    },
+    {
+        question: "Apa yang dimaksud dengan faktor Rhesus (Rh)?",
+        options: [
+            "Jenis protein dalam plasma darah",
+            "Antigen D pada permukaan sel darah merah",
+            "Hormon yang mengatur produksi darah",
+            "Antibodi khusus dalam darah"
+        ],
+        correct: 1,
+        explanation: "Faktor Rhesus adalah antigen D yang terdapat pada permukaan sel darah merah. Jika seseorang memiliki antigen D, golongan darahnya Rh positif (+); jika tidak memilikinya, Rh negatif (-)."
+    },
+    {
+        question: "Penyakit Hemolitik pada Bayi Baru Lahir (HDN) dapat terjadi pada kombinasi golongan darah orang tua yang bagaimana?",
+        options: [
+            "Ibu Rh+ dan ayah Rh-",
+            "Ibu Rh- dan ayah Rh+",
+            "Kedua orang tua Rh+",
+            "Kedua orang tua Rh-"
+        ],
+        correct: 1,
+        explanation: "HDN terjadi ketika ibu Rh- mengandung bayi Rh+ (dari ayah Rh+). Pada kehamilan kedua, antibodi Anti-D dari ibu dapat menyerang sel darah merah janin. Pencegahan dapat dilakukan dengan injeksi RhoGAM."
+    },
+    {
+        question: "Dua orang tua dengan golongan darah AB dan O akan menghasilkan anak dengan kemungkinan golongan darah?",
+        options: [
+            "Hanya AB",
+            "Hanya O",
+            "A atau B saja",
+            "A, B, AB, dan O"
+        ],
+        correct: 2,
+        explanation: "Orang tua AB (IAIB) hanya dapat memberikan alel IA atau IB, sedangkan orang tua O (ii) hanya dapat memberikan alel i. Hasilnya adalah anak dengan golongan A (IAi) atau B (IBi) dengan probabilitas 50% masing-masing. Anak tidak mungkin bergolongan AB atau O."
+    },
+    {
+        question: "Apa yang dimaksud dengan kodominansi dalam sistem golongan darah ABO?",
+        options: [
+            "Satu alel menutupi ekspresi alel lainnya",
+            "Kedua alel terekspresikan bersamaan",
+            "Alel hanya terekspresikan dalam kondisi tertentu",
+            "Alel bermutasi menjadi bentuk baru"
+        ],
+        correct: 1,
+        explanation: "Kodominansi adalah kondisi di mana kedua alel (IA dan IB) terekspresikan secara bersamaan dan setara pada fenotipe. Ini terlihat pada golongan darah AB, di mana kedua antigen A dan B muncul pada permukaan sel darah merah."
+    }
+];
+
+// ============================================
+// QUIZ STATE MANAGEMENT
+// ============================================
+let currentQuestion = 0;
+let userAnswers = [];
+let quizScore = 0;
+let quizCompleted = false;
+
+// ============================================
+// UTILITY FOR CUSTOM ALERT/MODAL
+// (Replacing default alert() function)
+// ============================================
+
+// Function to show a custom modal/alert
+function showCustomAlert(message) {
+    // Check if the modal element exists, create it if not
+    let modal = document.getElementById('customAlertModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'customAlertModal';
+        modal.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden';
+        modal.innerHTML = `
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4 transform transition-transform duration-300 scale-95">
+                <h4 class="text-xl font-bold mb-4 text-blood-dark">Pemberitahuan</h4>
+                <p id="alertMessage" class="text-gray-700 mb-6"></p>
+                <button id="closeAlertBtn" class="w-full bg-blood-red text-white py-2 rounded-lg font-semibold hover:bg-blood-dark transition duration-150">Tutup</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('closeAlertBtn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        });
+    }
+
+    document.getElementById('alertMessage').textContent = message;
+    modal.classList.remove('hidden');
+    // For visual effect: scale up
+    modal.querySelector('div').classList.remove('scale-95');
+    modal.querySelector('div').classList.add('scale-100');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+
+// ============================================
+// INITIALIZE QUIZ
+// ============================================
+function initQuiz() {
+    currentQuestion = 0;
+    userAnswers = new Array(quizQuestions.length).fill(null);
+    quizScore = 0;
+    quizCompleted = false;
+    
+    document.getElementById('quizResults').style.display = 'none';
+    document.getElementById('quizCard').style.display = 'block';
+    
+    displayQuestion();
+}
+
+// ============================================
+// DISPLAY QUESTION
+// ============================================
+function displayQuestion() {
+    const question = quizQuestions[currentQuestion];
+    
+    // Update question number
+    document.getElementById('questionNumber').textContent = `${currentQuestion + 1}`;
+    document.getElementById('questionTotal').textContent = `dari ${quizQuestions.length}`;
+    
+    // Update question text
+    document.getElementById('questionText').textContent = question.question;
+    
+    // Create options
+    const optionsContainer = document.getElementById('quizOptions');
+    optionsContainer.innerHTML = '';
+    
+    question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        
+        const isSelected = userAnswers[currentQuestion] === index;
+        if (isSelected) {
+            optionDiv.classList.add('selected');
+        }
+        
+        // Use a unique ID for the input to link to the label
+        const radioId = `option-${currentQuestion}-${index}`; 
+        
+        optionDiv.innerHTML = `
+            <input type="radio" 
+                    name="quizOption" 
+                    id="${radioId}" 
+                    value="${index}"
+                    ${isSelected ? 'checked' : ''}
+                    class="h-5 w-5 border-gray-300 focus:ring-blood-red">
+            <label for="${radioId}" class="ml-3 text-gray-700 font-medium">${option}</label>
+        `;
+        
+        // We attach the click listener to the optionDiv for better touch target/UX
+        optionDiv.addEventListener('click', () => selectOption(index));
+        optionsContainer.appendChild(optionDiv);
+    });
+    
+    // Update buttons
+    updateButtons();
+    
+    // Smooth scroll to quiz card if it's the start
+    if (currentQuestion === 0 && !quizCompleted) {
+        document.getElementById('quizCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// ============================================
+// SELECT OPTION
+// ============================================
+function selectOption(index) {
+    userAnswers[currentQuestion] = index;
+    
+    // Update visual selection
+    const options = document.getElementById('quizOptions').querySelectorAll('.quiz-option');
+    options.forEach((opt, i) => {
+        const radioInput = opt.querySelector('input[type="radio"]');
+        if (i === index) {
+            opt.classList.add('selected');
+            if (radioInput) radioInput.checked = true;
+        } else {
+            opt.classList.remove('selected');
+            if (radioInput) radioInput.checked = false;
+        }
+    });
+    
+    updateButtons();
+}
+
+// ============================================
+// UPDATE BUTTONS
+// ============================================
+function updateButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Show/hide previous button
+    prevBtn.style.visibility = currentQuestion > 0 ? 'visible' : 'hidden';
+    
+    // Show next or submit button
+    if (currentQuestion < quizQuestions.length - 1) {
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    } else {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'inline-block';
+    }
+}
+
+// ============================================
+// NAVIGATION FUNCTIONS
+// ============================================
+function nextQuestion() {
+    if (currentQuestion < quizQuestions.length - 1) {
+        currentQuestion++;
+        displayQuestion();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        displayQuestion();
+    }
+}
+
+// ============================================
+// SUBMIT QUIZ
+// ============================================
+function submitQuiz() {
+    // Check if all questions are answered
+    const unanswered = userAnswers.findIndex(answer => answer === null);
+    if (unanswered !== -1) {
+        showCustomAlert(`Anda belum menjawab pertanyaan nomor ${unanswered + 1}. Silakan jawab semua pertanyaan sebelum mengirim.`);
+        currentQuestion = unanswered;
+        displayQuestion();
+        return;
+    }
+    
+    // Calculate score
+    quizScore = 0;
+    userAnswers.forEach((answer, index) => {
+        if (answer === quizQuestions[index].correct) {
+            quizScore++;
+        }
+    });
+    
+    quizCompleted = true;
+    showResults();
+}
+
+// ============================================
+// SHOW RESULTS
+// ============================================
+function showResults() {
+    document.getElementById('quizCard').style.display = 'none';
+    const resultsDiv = document.getElementById('quizResults');
+    resultsDiv.style.display = 'block';
+    
+    // Determine performance level
+    const percentage = (quizScore / quizQuestions.length) * 100;
+    let icon, title, message, iconClass;
+    
+    if (percentage >= 90) {
+        icon = '🏆';
+        title = 'Luar Biasa!';
+        message = 'Anda memiliki pemahaman yang sangat baik tentang golongan darah dan genetika. Pertahankan!';
+        iconClass = 'excellent';
+    } else if (percentage >= 70) {
+        icon = '🌟';
+        title = 'Bagus Sekali!';
+        message = 'Pemahaman Anda tentang golongan darah sudah cukup baik. Terus belajar untuk hasil yang lebih sempurna!';
+        iconClass = 'good';
+    } else if (percentage >= 50) {
+        icon = '👍';
+        title = 'Cukup Baik';
+        message = 'Anda sudah memahami dasar-dasar golongan darah. Pelajari kembali materi untuk meningkatkan pemahaman.';
+        iconClass = 'fair';
+    } else {
+        icon = '📚';
+        title = 'Perlu Belajar Lebih Banyak';
+        message = 'Jangan berkecil hati! Pelajari kembali materi tentang golongan darah dan coba lagi.';
+        iconClass = 'needs-improvement';
+    }
+    
+    // Update results display
+    document.getElementById('resultsIcon').textContent = icon;
+    document.getElementById('resultsIcon').className = `results-icon ${iconClass}`;
+    document.getElementById('resultsTitle').textContent = title;
+    document.getElementById('resultsMessage').textContent = message;
+    document.getElementById('finalScore').textContent = quizScore;
+    
+    // Create detailed breakdown
+    const breakdownDiv = document.getElementById('resultsBreakdown');
+    breakdownDiv.innerHTML = '<h4>Ringkasan Jawaban:</h4>';
+    
+    const breakdownList = document.createElement('div');
+    breakdownList.className = 'breakdown-list';
+    
+    quizQuestions.forEach((question, index) => {
+        const isCorrect = userAnswers[index] === question.correct;
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `breakdown-item ${isCorrect ? 'correct' : 'incorrect'}`;
+        
+        const userAnswerText = userAnswers[index] !== null ? question.options[userAnswers[index]] : 'Belum Dijawab';
+        
+        itemDiv.innerHTML = `
+            <div class="breakdown-question">
+                <span class="breakdown-number text-blood-dark">${index + 1}.</span>
+                <span class="ml-2">${question.question}</span>
+            </div>
+            <div class="breakdown-answer">
+                <span class="answer-status ${isCorrect ? 'text-green-600' : 'text-red-600'}">${isCorrect ? '✓ Benar' : '✗ Salah'}</span>
+                <div class="answer-details">
+                    <div class="mt-2"><strong>Jawaban Anda:</strong> <span class="text-gray-900">${userAnswerText}</span></div>
+                    ${!isCorrect ? `<div><strong>Jawaban Benar:</strong> <span class="text-green-600 font-bold">${question.options[question.correct]}</span></div>` : ''}
+                </div>
+            </div>
+            <div class="breakdown-explanation">
+                <strong>Penjelasan:</strong> ${question.explanation}
+            </div>
+        `;
+        
+        breakdownList.appendChild(itemDiv);
+    });
+    
+    breakdownDiv.appendChild(breakdownList);
+
+    // Smooth scroll to results
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================
+// RESTART QUIZ
+// ============================================
+function restartQuiz() {
+    initQuiz();
+    // Scroll to the quiz section
+    const quizSection = document.getElementById('kuis');
+    if (quizSection) {
+        // Adjust scroll position to account for fixed navbar
+        const offset = document.getElementById('navbar').offsetHeight;
+        window.scrollTo({
+            top: quizSection.offsetTop - offset,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// ============================================
+// BLOOD TYPE INHERITANCE CALCULATOR
+// ============================================
+function calculateInheritance() {
+    const fatherBlood = document.getElementById('fatherBlood').value;
+    const fatherRh = document.getElementById('fatherRh').value;
+    const motherBlood = document.getElementById('motherBlood').value;
+    const motherRh = document.getElementById('motherRh').value;
+    
+    if (!fatherBlood || !fatherRh || !motherBlood || !motherRh) {
+        showCustomAlert('Mohon pilih semua golongan darah dan rhesus untuk kedua orang tua.');
+        return;
+    }
+    
+    // Get possible genotypes
+    const fatherGenotypes = getGenotypes(fatherBlood);
+    const motherGenotypes = getGenotypes(motherBlood);
+    
+    // Calculate ABO possibilities
+    const aboResults = {};
+    fatherGenotypes.forEach(fatherGeno => {
+        motherGenotypes.forEach(motherGeno => {
+            const children = crossGenotypes(fatherGeno, motherGeno);
+            children.forEach(child => {
+                const phenotype = getPhenotype(child);
+                // The given logic calculates permutations which is equivalent to 
+                // crossing all possible genotype combinations. This is complex but provided by user.
+                // We will use a count of 1 for simplicity of implementation based on user logic.
+                aboResults[phenotype] = (aboResults[phenotype] || 0) + 1;
+            });
+        });
+    });
+    
+    // Normalize percentages
+    const totalCombinations = Object.values(aboResults).reduce((a, b) => a + b, 0);
+    Object.keys(aboResults).forEach(key => {
+        aboResults[key] = (aboResults[key] / totalCombinations * 100).toFixed(1);
+    });
+    
+    // Calculate Rh possibilities
+    const rhResults = calculateRhesus(fatherRh, motherRh);
+    
+    // Display results
+    displayInheritanceResults(aboResults, rhResults, fatherBlood, motherBlood, fatherRh, motherRh);
+}
+
+function getGenotypes(bloodType) {
+    // Note: The original JS uses 'AA', 'AO' but the underlying genetics model 
+    // for calculation needs to be consistent. 'O' corresponds to 'ii'.
+    // For simplicity with the crossing function provided, we map to simple single-letter alleles,
+    // where A and B dominate over O.
+    // The user's original logic:
+    const genotypes = {
+        'A': ['IAi', 'IAIA'], // Used simplified mapping in JS for crossing
+        'B': ['IBi', 'IBIB'],
+        'AB': ['IAIB'],
+        'O': ['ii']
+    };
+
+    // The provided crossGenotypes works by splitting 2-character strings.
+    // We adjust the genotype return to simplify the crossing logic while maintaining the original intent:
+    if (bloodType === 'A') return ['Ai', 'AA']; 
+    if (bloodType === 'B') return ['Bi', 'BB'];
+    if (bloodType === 'AB') return ['AB'];
+    if (bloodType === 'O') return ['ii'];
+
+    return [];
+}
+
+function crossGenotypes(father, mother) {
+    const fatherAlleles = father.split('');
+    const motherAlleles = mother.split('');
+    const children = [];
+    
+    fatherAlleles.forEach(f => {
+        motherAlleles.forEach(m => {
+            // Sort alleles to ensure consistent phenotype checking (e.g., 'iA' becomes 'Ai')
+            const sorted = [f, m].sort();
+            children.push(sorted.join(''));
+        });
+    });
+    
+    return children;
+}
+
+function getPhenotype(genotype) {
+    const normalized = genotype.toUpperCase();
+    
+    if (normalized.includes('A') && normalized.includes('B')) return 'AB';
+    if (normalized.includes('A')) return 'A';
+    if (normalized.includes('B')) return 'B';
+    if (normalized === 'II') return 'O'; // 'ii' when normalized and uppercase
+    
+    return 'O'; // Fallback for 'i' alleles, assuming ii
+}
+
+function calculateRhesus(fatherRh, motherRh) {
+    const results = {};
+    
+    // Assuming both parents are heterozygous (D/d) if Rh positive is chosen, 
+    // unless one is negative (d/d). This is a simplified model.
+    if (fatherRh === 'positive' && motherRh === 'positive') {
+        // Assume Dd x Dd cross (75% D_, 25% dd)
+        results['Positif'] = 75.0;
+        results['Negatif'] = 25.0;
+    } else if (fatherRh === 'negative' && motherRh === 'negative') {
+        // Assume dd x dd cross (100% dd)
+        results['Positif'] = 0.0;
+        results['Negatif'] = 100.0;
+    } else {
+        // Assume Dd x dd cross (50% Dd, 50% dd) - Simplification
+        results['Positif'] = 50.0;
+        results['Negatif'] = 50.0;
+    }
+    
+    return results;
+}
+
+function displayInheritanceResults(aboResults, rhResults, fatherBlood, motherBlood, fatherRh, motherRh) {
+    const resultsDiv = document.getElementById('simulatorResults');
+    const contentDiv = document.getElementById('resultsContent');
+    
+    let html = `
+        <div class="simulation-summary p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+            <p class="text-lg font-medium"><strong>Persilangan:</strong> <span class="text-blood-red">${fatherBlood}${fatherRh === 'positive' ? '+' : '-'} (Ayah)</span> × <span class="text-blood-red">${motherBlood}${motherRh === 'positive' ? '+' : '-'} (Ibu)</span></p>
+        </div>
+        
+        <div class="results-section mb-6">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-3 flex items-center">
+                <span class="mr-2 text-blood-red">🩸</span> Kemungkinan Golongan Darah ABO
+            </h4>
+            <div class="probability-chart space-y-2">
+    `;
+    
+    // Sort results by Blood Type (A, B, AB, O)
+    const sortedAboResults = Object.entries(aboResults).sort(([typeA], [typeB]) => {
+        const order = { 'A': 1, 'B': 2, 'AB': 3, 'O': 4 };
+        return order[typeA] - order[typeB];
+    });
+
+    sortedAboResults.forEach(([type, percentage]) => {
+        // Only show types with > 0% probability
+        if (parseFloat(percentage) > 0) {
+            html += `
+                <div class="probability-item">
+                    <span class="blood-type-label">${type}</span>
+                    <div class="probability-bar">
+                        <div class="bar-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="percentage-label">${percentage}%</span>
+                </div>
+            `;
+        }
+    });
+    
+    html += `
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-3 flex items-center">
+                <span class="mr-2 text-blood-red">🧬</span> Kemungkinan Rhesus
+            </h4>
+            <div class="probability-chart space-y-2">
+    `;
+    
+    Object.entries(rhResults).forEach(([rh, percentage]) => {
+        if (percentage > 0) {
+            html += `
+                <div class="probability-item">
+                    <span class="blood-type-label">Rh ${rh}</span>
+                    <div class="probability-bar">
+                        <div class="bar-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="percentage-label">${percentage.toFixed(1)}%</span>
+                </div>
+            `;
+        }
+    });
+    
+    html += `
+            </div>
+        </div>
+        
+        <div class="results-note">
+            <strong>📝 Catatan:</strong> Hasil ini adalah probabilitas teoritis berdasarkan hukum pewarisan Mendel. 
+            Untuk mengetahui golongan darah pasti, diperlukan tes laboratorium.
+        </div>
+    `;
+    
+    // Add HDN warning if applicable
+    if (motherRh === 'negative' && fatherRh === 'positive') {
+        html += `
+            <div class="hdn-warning">
+                <strong>⚠️ Peringatan Medis:</strong> Kombinasi ibu Rh- dengan ayah Rh+ berisiko menyebabkan 
+                Penyakit Hemolitik pada Bayi Baru Lahir (HDN). Konsultasi dengan dokter dan pemberian RhoGAM 
+                sangat dianjurkan untuk mencegah komplikasi.
+            </div>
+        `;
+    }
+    
+    contentDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+    
+    // Smooth scroll to results
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================
+// CONTACT FORM
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('contactName').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const message = document.getElementById('contactMessage').value.trim();
+            
+            // Simple validation
+            if (!name || !email || !message) {
+                showCustomAlert('Mohon isi semua field yang wajib diisi.');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showCustomAlert('Mohon masukkan alamat email yang valid.');
+                return;
+            }
+            
+            // Show success message
+            document.getElementById('formSuccess').style.display = 'block';
+            
+            // Reset form
+            contactForm.reset();
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('formSuccess').style.display = 'none';
+            }, 5000);
+        });
+    }
+    
+    // Initialize quiz
+    initQuiz();
+});
+
+// ============================================
+// SMOOTH SCROLLING
+// ============================================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
+        const navbarHeight = document.getElementById('navbar').offsetHeight;
+        
+        if (target) {
+            const targetPosition = target.offsetTop - navbarHeight;
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+// ============================================
+// NAVBAR SCROLL EFFECT
+// ============================================
+window.addEventListener('scroll', function() {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+    
+    // Show/hide scroll to top button
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (window.scrollY > 300) {
+        scrollBtn.style.display = 'block';
+    } else {
+        scrollBtn.style.display = 'none';
+    }
+});
+
+// ============================================
+// SCROLL TO TOP
+// ============================================
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// ============================================
+// MOBILE NAVIGATION
+// ============================================
+const navToggle = document.getElementById('navToggle');
+const navMenu = document.getElementById('navMenu');
+
+if (navToggle) {
+    navToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        navToggle.classList.toggle('active');
+    });
+}
+
+// Close mobile menu when clicking on a link
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function() {
+        navMenu.classList.remove('active');
+        navToggle.classList.remove('active');
+    });
+});
+
+// ============================================
+// FADE IN ANIMATION ON SCROLL
+// ============================================
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.fade-in').forEach(element => {
+    observer.observe(element);
+});
+    </script>
+</body>
+</html>
